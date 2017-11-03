@@ -1,0 +1,109 @@
+def sample_words(prob_list,word_list):
+    u = random()
+    #print (sum(prob_list))
+    p = 0
+      
+    for i in range(0,len(prob_list)):
+        if p > u:
+            return word_list[i-1]
+        p += prob_list[i]
+    return word_list[-1]
+
+def bigram_sent(lm,sent):
+    last_word = sent[-1]
+    
+    next_word_prob = []
+    next_words = []
+    
+    for i in lm:
+        if i[0] == last_word:
+            next_word_prob.append(lm[i])
+            next_words.append(i[1:])
+    
+    next_word = sample_words(next_word_prob,next_words)
+    
+    if next_word == None:
+        raise NotImplementedError ('Next word is none!')
+    
+    sent.append(next_word[0])
+    return sent
+
+def trigram_sent(lm,sent):
+    last_two_words = sent[-2:]
+    
+    next_word_prob = []
+    next_words = []
+    
+    for i in lm:
+        if last_two_words == list(i)[:2]:
+            next_word_prob.append(lm[i])
+            next_words.append(i[-1])
+    next_word = sample_words(next_word_prob,next_words)
+    
+    if next_word == None:
+        raise NotImplementedError ('Next word is none!')
+        
+    sent.append(next_word)
+    
+    return sent
+
+def generate_sent(lm, N):
+    ## YOUR CODE HERE ##
+    
+    if N < 2 or N > 4:
+        raise NotImplementedError ('N should be 2, 3 or 4!')
+        
+    start = '<s>'
+    end = '</s>'
+    
+    sentence = [start]
+    
+    if N == 4:
+        sentence = bigram_sent(bigram,sentence)
+        sentence = trigram_sent(trigram,sentence)
+    elif N == 3:
+        sentence = bigram_sent(bigram,sentence)
+    
+    looking_back = N-1
+    previous_word = sentence[-looking_back:]
+    
+    while previous_word != end: 
+        last_part = sentence[-looking_back:]
+        next_words = []
+        next_word_prob = []
+                
+        for i in lm:
+            if last_part == list(i)[:looking_back]:
+                next_word_prob.append(lm[i])
+                next_words.append(i[-1])
+        print (next_words)
+        next_word = sample_words(next_word_prob,next_words)
+        
+        if next_word == None:
+            raise NotImplementedError ('Next word is none!')
+        
+        sentence.append(next_word)
+        print (sentence)
+        
+        if next_word == '.':
+            sentence.append(end)
+            return sentence
+        
+        if next_word == end:
+            return sentence
+        
+N = 4
+k = 0
+bigram, unigram = train_ngram(data, 2, k)
+print ('Done training bigram')
+trigram, unigram = train_ngram(data, 3, k)
+print ('Done training trigram')
+quadgram,unigram = train_ngram(data , 4 , k)
+print ('Done training')
+sentence = generate_sent(quadgram,N)
+sentence_str = str()
+
+for i in sentence[1:-1]:
+    sentence_str += i + ' '
+
+print (sentence_str)
